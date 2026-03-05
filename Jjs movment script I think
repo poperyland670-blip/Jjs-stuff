@@ -1,0 +1,489 @@
+Local v_u_1 = script.Parent
+local v2 = v_u_1:WaitForChild("Torso")
+local v_u_3 = v_u_1:WaitForChild("HumanoidRootPart")
+local v_u_4 = v2:WaitForChild("Right Shoulder")
+local v_u_5 = v2:WaitForChild("Left Shoulder")
+local v_u_6 = v2:WaitForChild("Right Hip")
+local v_u_7 = v2:WaitForChild("Left Hip")
+v2:WaitForChild("Neck")
+local v_u_8 = v_u_1:WaitForChild("Humanoid")
+local v_u_9 = "Standing"
+local v_u_10 = require(game.ReplicatedStorage.Modules.CameraShaker)
+local v11, v12 = pcall(function()
+	return UserSettings():IsUserFeatureEnabled("UserAnimateScaleRun")
+end)
+local v_u_13 = v11 and v12
+local v_u_14 = ""
+local v_u_15 = nil
+local v_u_16 = nil
+local v_u_17 = nil
+local v_u_18 = 1
+local v_u_19 = nil
+local v_u_20 = {}
+local v_u_21 = {
+	["idle"] = {
+		{
+			["id"] = "http://www.roblox.com/asset/?id=120133391090244",
+			["weight"] = 9
+		},
+		{
+			["id"] = "http://www.roblox.com/asset/?id=138196552148011",
+			["weight"] = 1
+		}
+	},
+	["walk"] = {
+		{
+			["id"] = "http://www.roblox.com/asset/?id=96489184596023",
+			["weight"] = 10
+		}
+	},
+	["walkL"] = {
+		{
+			["id"] = "http://www.roblox.com/asset/?id=117941450906936",
+			["weight"] = 10
+		}
+	},
+	["walkR"] = {
+		{
+			["id"] = "http://www.roblox.com/asset/?id=77705898607209",
+			["weight"] = 10
+		}
+	},
+	["sprint"] = {
+		{
+			["id"] = "http://www.roblox.com/asset/?id=140491244934559",
+			["weight"] = 10
+		}
+	},
+	["jump"] = {
+		{
+			["id"] = "http://www.roblox.com/asset/?id=134343219970072",
+			["weight"] = 10
+		}
+	},
+	["fall"] = {
+		{
+			["id"] = "http://www.roblox.com/asset/?id=126572575938378",
+			["weight"] = 10
+		}
+	},
+	["climb"] = {
+		{
+			["id"] = "http://www.roblox.com/asset/?id=93938476274140",
+			["weight"] = 10
+		}
+	},
+	["sit"] = {
+		{
+			["id"] = "http://www.roblox.com/asset/?id=137199497329581",
+			["weight"] = 10
+		}
+	}
+}
+local v_u_27 = {
+	["Gojo"] = function(_)
+		return 77992084875736
+	end,
+	["Hakari"] = function(_)
+		return 135750035707554
+	end,
+	["Mahoraga"] = function(_)
+		return 85570635517461
+	end,
+	["Mahito"] = function(_)
+		return 85012092465916
+	end,
+	["Charles"] = function(_)
+		return 72509133503569
+	end,
+	["Hiromi"] = function(p22)
+		return p22.SetAssets:FindFirstChild("ExecSword") and 119619096808750 or 140491244934559
+	end,
+	["Yuta"] = function(p23)
+		return p23:GetAttribute("Sword") and 119619096808750 or 140491244934559
+	end,
+	["Nanami"] = function(p24)
+		return p24:GetAttribute("InUlt") and 98616794135588 or 119619096808750
+	end,
+	["Haruta"] = function(p25)
+		return p25:GetAttribute("Sword") == true and 119619096808750 or 140491244934559
+	end,
+	["Heian"] = function(_)
+		return 85570635517461
+	end,
+	["Goku"] = function(p26)
+		return p26:GetAttribute("InUlt") and 97238189166310 or 125812953913280
+	end,
+	["Mokou"] = function(_)
+		return 77801551230831
+	end,
+	["Chara"] = function(_)
+		return 114113678077830
+	end
+}
+local v_u_28 = {}
+function configureAnimationSet(p_u_29, p_u_30)
+	-- upvalues: (copy) v_u_20
+	if v_u_20[p_u_29] ~= nil then
+		for _, v31 in pairs(v_u_20[p_u_29].connections) do
+			v31:disconnect()
+		end
+	end
+	v_u_20[p_u_29] = {}
+	v_u_20[p_u_29].count = 0
+	v_u_20[p_u_29].totalWeight = 0
+	v_u_20[p_u_29].connections = {}
+	local v32 = script:FindFirstChild(p_u_29)
+	if v32 ~= nil then
+		local v33 = v_u_20[p_u_29].connections
+		local v34 = v32.ChildAdded
+		table.insert(v33, v34:connect(function(_)
+			-- upvalues: (copy) p_u_29, (copy) p_u_30
+			configureAnimationSet(p_u_29, p_u_30)
+		end))
+		local v35 = v_u_20[p_u_29].connections
+		local v36 = v32.ChildRemoved
+		table.insert(v35, v36:connect(function(_)
+			-- upvalues: (copy) p_u_29, (copy) p_u_30
+			configureAnimationSet(p_u_29, p_u_30)
+		end))
+		local v37 = 1
+		for _, v38 in pairs(v32:GetChildren()) do
+			if v38:IsA("Animation") then
+				local v39 = v_u_20[p_u_29].connections
+				local v40 = v38.Changed
+				table.insert(v39, v40:connect(function(_)
+					-- upvalues: (copy) p_u_29, (copy) p_u_30
+					configureAnimationSet(p_u_29, p_u_30)
+				end))
+				v_u_20[p_u_29][v37] = {}
+				v_u_20[p_u_29][v37].anim = v38
+				local v41 = v38:FindFirstChild("Weight")
+				if v41 == nil then
+					v_u_20[p_u_29][v37].weight = 1
+				else
+					v_u_20[p_u_29][v37].weight = v41.Value
+				end
+				v_u_20[p_u_29].count = v_u_20[p_u_29].count + 1
+				v_u_20[p_u_29].totalWeight = v_u_20[p_u_29].totalWeight + v_u_20[p_u_29][v37].weight
+				v37 = v37 + 1
+			end
+		end
+	end
+	if v_u_20[p_u_29].count <= 0 then
+		for v42, v43 in pairs(p_u_30) do
+			v_u_20[p_u_29][v42] = {}
+			v_u_20[p_u_29][v42].anim = Instance.new("Animation")
+			v_u_20[p_u_29][v42].anim.Name = p_u_29
+			v_u_20[p_u_29][v42].anim.AnimationId = v43.id
+			v_u_20[p_u_29][v42].weight = v43.weight
+			v_u_20[p_u_29].count = v_u_20[p_u_29].count + 1
+			v_u_20[p_u_29].totalWeight = v_u_20[p_u_29].totalWeight + v43.weight
+		end
+	end
+end
+function scriptChildModified(p44)
+	-- upvalues: (copy) v_u_21
+	local v45 = v_u_21[p44.Name]
+	if v45 ~= nil then
+		configureAnimationSet(p44.Name, v45)
+	end
+end
+script.ChildAdded:connect(scriptChildModified)
+script.ChildRemoved:connect(scriptChildModified)
+local v46
+if v_u_8 then
+	v46 = v_u_8:FindFirstChildOfClass("Animator")
+else
+	v46 = nil
+end
+if v46 then
+	local v47 = v46:GetPlayingAnimationTracks()
+	for _, v48 in ipairs(v47) do
+		v48:Stop(0)
+		v48:Destroy()
+	end
+end
+for v49, v50 in pairs(v_u_21) do
+	configureAnimationSet(v49, v50)
+end
+local v_u_51 = 0
+function stopAllAnimations()
+	-- upvalues: (ref) v_u_14, (copy) v_u_28, (ref) v_u_15, (ref) v_u_17, (ref) v_u_16
+	local v52 = v_u_14
+	local v53 = v_u_28[v52] ~= nil and v_u_28[v52] == false and "idle" or v52
+	v_u_14 = ""
+	v_u_15 = nil
+	if v_u_17 ~= nil then
+		v_u_17:disconnect()
+	end
+	if v_u_16 ~= nil then
+		v_u_16:Stop()
+		v_u_16:Destroy()
+		v_u_16 = nil
+	end
+	return v53
+end
+function setAnimationSpeed(p54)
+	-- upvalues: (ref) v_u_18, (ref) v_u_16
+	if p54 ~= v_u_18 then
+		v_u_18 = p54
+		v_u_16:AdjustSpeed(v_u_18)
+	end
+end
+function keyFrameReachedFunc(p55)
+	-- upvalues: (ref) v_u_14, (copy) v_u_28, (ref) v_u_18, (copy) v_u_8
+	if p55 == "End" then
+		local v56 = v_u_14
+		local v57 = v_u_28[v56] ~= nil and v_u_28[v56] == false and "idle" or v56
+		local v58 = v_u_18
+		playAnimation(v57, 0, v_u_8)
+		setAnimationSpeed(v58)
+	end
+end
+function playAnimation(p59, p60, p61)
+	-- upvalues: (copy) v_u_20, (copy) v_u_27, (copy) v_u_1, (ref) v_u_19, (ref) v_u_15, (ref) v_u_16, (ref) v_u_18, (ref) v_u_14, (ref) v_u_17
+	local v62 = math.random(1, v_u_20[p59].totalWeight)
+	local v63 = 1
+	while v_u_20[p59][v63].weight < v62 do
+		v62 = v62 - v_u_20[p59][v63].weight
+		v63 = v63 + 1
+	end
+	local v64 = v_u_20[p59][v63].anim
+	if p59 == "sprint" and (v_u_27[v_u_1:GetAttribute("Moveset")] and v_u_27[v_u_1:GetAttribute("Moveset")](v_u_1)) then
+		v64.AnimationId = "rbxassetid://" .. v_u_27[v_u_1:GetAttribute("Moveset")](v_u_1)
+		v64.Name = "sprint"
+		if v_u_19 ~= v64.AnimationId then
+			v_u_19 = v64.AnimationId
+		end
+	end
+	if v64 ~= v_u_15 then
+		if v_u_16 ~= nil then
+			v_u_16:Stop(p60)
+			v_u_16 = nil
+		end
+		v_u_18 = 1
+		v_u_16 = p61:LoadAnimation(v64)
+		v_u_16.Priority = Enum.AnimationPriority.Core
+		v_u_16:Play(p60)
+		v_u_14 = p59
+		v_u_15 = v64
+		if v_u_17 ~= nil then
+			v_u_17:disconnect()
+		end
+		v_u_17 = v_u_16.KeyframeReached:connect(keyFrameReachedFunc)
+	end
+end
+local function v_u_68()
+	-- upvalues: (copy) v_u_8, (copy) v_u_1
+	local v65 = (1 - v_u_8.Health / v_u_8.MaxHealth) * 3
+	local v66 = game.StarterPlayer.CharacterWalkSpeed * 1.375 - v65
+	if v_u_1:GetAttribute("Sprint") and v_u_8.WalkSpeed >= v66 - 1 then
+		return "sprint"
+	end
+	if v_u_1.Info:FindFirstChild("Block") then
+		return "walk"
+	end
+	local v67 = v_u_8.MoveDirection:Dot(v_u_8.RootPart.CFrame.RightVector)
+	return v67 > 0.5 and "walkR" or (v67 < -0.5 and "walkL" or "walk")
+end
+function onRunning(p69)
+	-- upvalues: (copy) v_u_13, (copy) v_u_1, (copy) v_u_68, (copy) v_u_8, (ref) v_u_9, (copy) v_u_28, (ref) v_u_14
+	local v70 = p69 / (not v_u_13 and 1 or v_u_1:GetScale())
+	if v70 > 2 then
+		playAnimation(v_u_68(), 0.2, v_u_8)
+		local v71 = v_u_1:GetAttribute("Sprint") and 22 or game.StarterPlayer.CharacterWalkSpeed
+		setAnimationSpeed(v70 / v71)
+		v_u_9 = "Running"
+	elseif v_u_28[v_u_14] == nil then
+		playAnimation("idle", 0.1, v_u_8)
+		v_u_9 = "Standing"
+	end
+end
+function onDied()
+	-- upvalues: (ref) v_u_9
+	v_u_9 = "Dead"
+end
+function onJumping()
+	-- upvalues: (copy) v_u_8, (ref) v_u_51, (ref) v_u_9
+	playAnimation("jump", 0.1, v_u_8)
+	v_u_51 = 0.3
+	v_u_9 = "Jumping"
+end
+function onClimbing(p72)
+	-- upvalues: (copy) v_u_13, (copy) v_u_1, (copy) v_u_8, (ref) v_u_9
+	local v73 = p72 / (not v_u_13 and 1 or v_u_1:GetScale())
+	playAnimation("climb", 0.1, v_u_8)
+	setAnimationSpeed(v73 / 12)
+	v_u_9 = "Climbing"
+end
+function onGettingUp()
+	-- upvalues: (ref) v_u_9
+	v_u_9 = "GettingUp"
+end
+function onFreeFall()
+	-- upvalues: (ref) v_u_51, (copy) v_u_8, (ref) v_u_9
+	if v_u_51 <= 0 then
+		playAnimation("fall", 0.3, v_u_8)
+	end
+	v_u_9 = "FreeFall"
+end
+function onFallingDown()
+	-- upvalues: (ref) v_u_9
+	v_u_9 = "FallingDown"
+end
+function onSeated()
+	-- upvalues: (ref) v_u_9
+	v_u_9 = "Seated"
+end
+function onSwimming(p74)
+	-- upvalues: (ref) v_u_9
+	if p74 > 0 then
+		v_u_9 = "Running"
+	else
+		v_u_9 = "Standing"
+	end
+end
+function getTool()
+	-- upvalues: (copy) v_u_1
+	for _, v75 in ipairs(v_u_1:GetChildren()) do
+		if v75.className == "Tool" then
+			return v75
+		end
+	end
+	return nil
+end
+function getToolAnim(p76)
+	for _, v77 in ipairs(p76:GetChildren()) do
+		if v77.Name == "toolanim" and v77.className == "StringValue" then
+			return v77
+		end
+	end
+	return nil
+end
+function moveSit()
+	-- upvalues: (copy) v_u_4, (copy) v_u_5, (copy) v_u_6, (copy) v_u_7
+	v_u_4.MaxVelocity = 0.15
+	v_u_5.MaxVelocity = 0.15
+	v_u_4:SetDesiredAngle(1.57)
+	v_u_5:SetDesiredAngle(-1.57)
+	v_u_6:SetDesiredAngle(1.57)
+	v_u_7:SetDesiredAngle(-1.57)
+end
+local v_u_78 = 0
+function move(p79)
+	-- upvalues: (ref) v_u_78, (ref) v_u_51, (ref) v_u_9, (copy) v_u_8, (copy) v_u_68, (copy) v_u_4, (copy) v_u_5, (copy) v_u_6, (copy) v_u_7
+	local v80 = 1
+	local v81 = 1
+	local v82 = p79 - v_u_78
+	v_u_78 = p79
+	local v83 = false
+	if v_u_51 > 0 then
+		v_u_51 = v_u_51 - v82
+	end
+	if v_u_9 == "FreeFall" and v_u_51 <= 0 then
+		playAnimation("fall", 0.3, v_u_8)
+	else
+		if v_u_9 == "Seated" then
+			playAnimation("sit", 0.5, v_u_8)
+			return
+		end
+		if v_u_9 == "Running" then
+			playAnimation(v_u_68(), 0.2, v_u_8)
+		elseif v_u_9 == "Dead" or (v_u_9 == "GettingUp" or (v_u_9 == "FallingDown" or v_u_9 == "Seated")) then
+			stopAllAnimations()
+			v83 = true
+			v81 = 1
+			v80 = 0.1
+		end
+	end
+	if v83 then
+		local v84 = p79 * v81
+		local v85 = v80 * math.sin(v84)
+		v_u_4:SetDesiredAngle(v85 + 0)
+		v_u_5:SetDesiredAngle(v85 - 0)
+		v_u_6:SetDesiredAngle(-v85)
+		v_u_7:SetDesiredAngle(-v85)
+	end
+end
+v_u_8.Died:connect(onDied)
+v_u_8.Running:connect(onRunning)
+v_u_8.Jumping:connect(onJumping)
+v_u_8.Climbing:connect(onClimbing)
+v_u_8.GettingUp:connect(onGettingUp)
+v_u_8.FreeFalling:connect(onFreeFall)
+v_u_8.FallingDown:connect(onFallingDown)
+v_u_8.Seated:connect(onSeated)
+v_u_8.Swimming:connect(onSwimming)
+local function v87()
+	-- upvalues: (copy) v_u_8, (ref) v_u_19
+	for _, v86 in pairs(v_u_8:GetPlayingAnimationTracks()) do
+		if v_u_19 and v86.Animation.AnimationId == v_u_19 then
+			v86:Stop()
+		end
+	end
+	v_u_8:ChangeState(Enum.HumanoidStateType.Climbing)
+end
+v_u_1:GetAttributeChangedSignal("Moveset"):Connect(v87)
+v_u_1:GetAttributeChangedSignal("InUlt"):Connect(v87)
+v_u_1:GetAttributeChangedSignal("Sword"):Connect(v87)
+task.spawn(function()
+	-- upvalues: (copy) v_u_8, (copy) v_u_3, (copy) v_u_1, (copy) v_u_10
+	local v_u_88 = v_u_8:LoadAnimation(game.ReplicatedStorage.Animations.Misc.Movement.Land)
+	local v_u_89 = v_u_8:LoadAnimation(game.ReplicatedStorage.Animations.Misc.Movement.Roll)
+	v_u_88.Priority = Enum.AnimationPriority.Movement
+	v_u_89.Priority = Enum.AnimationPriority.Movement
+	local v_u_90 = -1000
+	v_u_8:GetPropertyChangedSignal("Jump"):Connect(function()
+		-- upvalues: (ref) v_u_8, (ref) v_u_90
+		if v_u_8.Jump == true then
+			v_u_90 = tick()
+		end
+	end)
+	local v_u_91 = game.ReplicatedStorage.Sounds
+	local v92 = require(game.ReplicatedStorage.Knit.Knit)
+	v92.OnStart():await()
+	local v_u_93 = v92.GetService("MovementService")
+	local v_u_94 = v92.GetController("FXController")
+	v_u_8.StateChanged:Connect(function(_, p95)
+		-- upvalues: (ref) v_u_3, (ref) v_u_1, (ref) v_u_90, (ref) v_u_8, (copy) v_u_91, (copy) v_u_94, (copy) v_u_93, (copy) v_u_89, (ref) v_u_10, (copy) v_u_88
+		if p95 == Enum.HumanoidStateType.Landed then
+			local v96 = v_u_3.Velocity.Y
+			if v96 < -50 and (not v_u_1:GetAttribute("Movement") and (not v_u_1.Info:FindFirstChild("InSkill") and (not v_u_1.Info:FindFirstChild("Block") and (not v_u_1.Info:FindFirstChild("Stun") and (not v_u_1.Info:FindFirstChild("NoParkour") and tick() - v_u_90 < 0.25))))) then
+				v_u_8.JumpPower = 0
+				local v97 = Instance.new("BoolValue", v_u_1.Info)
+				v97.Name = "NoJump"
+				game:GetService("Debris"):AddItem(v97, 0.4)
+				v_u_1:SetAttribute("Movement", true)
+				local v98 = Instance.new("BodyVelocity", v_u_1.Torso)
+				v98.MaxForce = Vector3.new(40000, 0, 40000)
+				v98.P = 40000
+				v98.Name = "MovementForce"
+				game:GetService("Debris"):AddItem(v98, 0.4)
+				v_u_91.Misc.Parkour.Roll.Pitch = math.random(90, 110) / 100
+				v_u_94:PlaySound(v_u_91.Misc.Parkour.Roll, v_u_3, game.SoundService.Effect)
+				v_u_93.Parkour:Fire(true)
+				local v99 = v_u_1.HumanoidRootPart.CFrame.LookVector
+				local v100 = -v96 / 1.5
+				v98.Velocity = Vector3.new(0, -30, 0) + v99 * math.clamp(v100, 0, 60)
+				game:GetService("TweenService"):Create(v98, TweenInfo.new(0.6), {
+					["MaxForce"] = Vector3.new(0, 0, 0)
+				}):Play()
+				v_u_89:Play(0.1, nil, 0.7)
+				task.wait(0.4)
+				v_u_1:SetAttribute("Movement", nil)
+				v_u_94:DustTrail(v_u_1, 0.4)
+				v_u_10.CurrentShaker:Shake(v_u_10.Presets.MediumHit)
+				return
+			end
+			local v101 = -v_u_3.Velocity.Y / 100
+			v_u_88:Play(nil, math.clamp(v101, 0, 1), 2)
+		end
+	end)
+end)
+playAnimation("idle", 0.1, v_u_8)
+local _ = "Standing"
+while v_u_1.Parent ~= nil do
+	local _, v102 = wait(0.1)
+	move(v102)
+end
