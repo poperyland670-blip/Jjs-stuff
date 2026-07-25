@@ -1,0 +1,160 @@
+-- Load Rayfield UI Library
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+-- Services
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Global State & Trackers
+local SkeletonEnabled = false
+local ActiveConnections = {}
+
+-- Create UI Window
+local Window = Rayfield:CreateWindow({
+   Name = "Admin Control Panel",
+   LoadingTitle = "Admin Utilities",
+   LoadingSubtitle = "Visual Effects",
+   ConfigurationSaving = { Enabled = false },
+   Discord = { Enabled = false },
+   KeySystem = false
+})
+
+local AdminTab = Window:CreateTab("Admin Features", 4483362458)
+
+-- Define bone connection pairs for R6 and R15 rigs
+local R6_BONES = {
+    {"Head", "Torso"},
+    {"Torso", "Left Arm"},
+    {"Torso", "Right Arm"},
+    {"Torso", "Left Leg"},
+    {"Torso", "Right Leg"}
+}
+
+local R15_BONES = {
+    {"Head", "UpperTorso"},
+    {"UpperTorso", "LowerTorso"},
+    -- Left Arm
+    {"UpperTorso", "LeftUpperArm"},
+    {"LeftUpperArm", "LeftLowerArm"},
+    {"LeftLowerArm", "LeftHand"},
+    -- Right Arm
+    {"UpperTorso", "RightUpperArm"},
+    {"RightUpperArm", "RightLowerArm"},
+    {"RightLowerArm", "RightHand"},
+    -- Left Leg
+    {"LowerTorso", "LeftUpperLeg"},
+    {"LeftUpperLeg", "LeftLowerLeg"},
+    {"LeftLowerLeg", "LeftFoot"},
+    -- Right Leg
+    {"LowerTorso", "RightUpperLeg"},
+    {"RightUpperLeg", "RightLowerLeg"},
+    {"RightLowerLeg", "RightFoot"}
+}
+
+-- Function to clear skeleton lines from a character
+local function clearSkeleton(character)
+    local folder = character:FindFirstChild("AdminSkeleton")
+    if folder then
+        folder:Destroy()
+    end
+end
+
+-- Function to build the skeleton visualization
+local function buildSkeleton(character)
+    if not SkeletonEnabled or not character then return end
+    clearSkeleton(character)
+
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then return end
+
+    -- Determine rig type (R6 vs R15)
+    local boneList = (humanoid.RigType == Enum.HumanoidRigType.R15) and R15_BONES or R6_BONES
+
+    local skeletonFolder = Instance.new("Folder")
+    skeletonFolder.Name = "AdminSkeleton"
+    skeletonFolder.Parent = character
+
+    for _, pair in ipairs(boneList) do
+        local partA = character:FindFirstChild(pair[1])
+        local partB = character:FindFirstChild(pair[2])
+
+        if partA and partB then
+            local line = Instance.new("LineHandleAdornment")
+            line.Name = pair[1] .. "_" .. pair[2]
+            line.Length = 0 -- Dynamically updates automatically between Adornee & Target
+            line.Thickness = 3
+            line.Color3 = Color3.fromRGB(0, 255, 170) -- Cyan/Neon Green accent
+            line.AlwaysOnTop = true
+            line.ZIndex = 10
+            line.Adornee = partA
+            line.Target = partB
+            line.Parent = skeletonFolder
+        end
+    end
+end
+
+-- Track player spawning & respawning
+local function trackPlayer(player)
+    if player == LocalPlayer then return end
+
+    local function onCharacterAdded(character)
+        character:WaitForChild("Humanoid", 5)
+        if SkeletonEnabled then
+            buildSkeleton(character)
+        end
+    end
+
+    if player.Character then
+        onCharacterAdded(player.Character)
+    end
+
+    local conn = player.CharacterAdded:Connect(onCharacterAdded)
+    table.insert(ActiveConnections, conn)
+end
+
+-- Disable all skeleton visuals and disconnect listeners
+local function disableSkeletons()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player.Character then
+            clearSkeleton(player.Character)
+        end
+    end
+
+    for _, conn in ipairs(ActiveConnections) do
+        if conn then
+            conn:Disconnect()
+        end
+    end
+    ActiveConnections = {}
+end
+
+-- Enable skeleton visuals for all players
+local function enableSkeletons()
+    disableSkeletons() -- Reset existing setup
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        trackPlayer(player)
+    end
+
+    local joinConn = Players.PlayerAdded:Connect(function(player)
+        if SkeletonEnabled then
+            trackPlayer(player)
+        end
+    end)
+    table.insert(ActiveConnections, joinConn)
+end
+
+-- Rayfield Toggle Control
+AdminTab:CreateToggle({
+   Name = "Skeleton Visualizer (R6 / R15)",
+   CurrentValue = false,
+   Flag = "SkeletonToggle",
+   Callback = function(Value)
+       SkeletonEnabled = Value
+       if SkeletonEnabled then
+           enableSkeletons()
+       else
+           disableSkeletons()
+       end
+   end,
+})
